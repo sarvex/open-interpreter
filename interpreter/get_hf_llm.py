@@ -39,7 +39,7 @@ def get_hf_llm(repo_id, debug_mode, context_window):
       print('', Markdown(f"**Open Interpreter** will use `{repo_id}` for local execution. Use your arrow keys to set up the model."), '')
 
     raw_models = list_gguf_files(repo_id)
-    
+
     if not raw_models:
         print(f"Failed. Are you sure there are GGUF files in `{repo_id}`?")
         return None
@@ -67,8 +67,8 @@ def get_hf_llm(repo_id, debug_mode, context_window):
             selected_model = combined_models[len(combined_models) // 2]["filename"]
         elif answers["selected_model"].startswith("Large"):
             selected_model = combined_models[-1]["filename"]
-    
-    if selected_model == None:
+
+    if selected_model is None:
         # This means they either selected See More,
         # Or the model only had 1 or 2 options
 
@@ -111,13 +111,13 @@ def get_hf_llm(repo_id, debug_mode, context_window):
     else:
         # If the file was not found, ask for confirmation to download it
         download_path = os.path.join(default_path, selected_model)
-      
+
         print(f"This language model was not found on your system.\n\nDownload to `{default_path}`?", "")
         if confirm_action(""):
-          
+
             # Check if model was originally split
             split_files = [model["filename"] for model in raw_models if selected_model in model["filename"]]
-            
+
             if len(split_files) > 1:
                 # Download splits
                 for split_file in split_files:
@@ -127,21 +127,21 @@ def get_hf_llm(repo_id, debug_mode, context_window):
                         if not confirm_action(f"Split file {split_path} already exists. Download again?"):
                             continue
                     hf_hub_download(repo_id=repo_id, filename=split_file, local_dir=default_path, local_dir_use_symlinks=False)
-                
+
                 # Combine and delete splits
                 actually_combine_files(default_path, selected_model, split_files)
             else:
                 hf_hub_download(repo_id=repo_id, filename=selected_model, local_dir=default_path, local_dir_use_symlinks=False)
 
             model_path = download_path
-        
+
         else:
             print('\n', "Download cancelled. Exiting.", '\n')
             return None
 
     # This is helpful for folks looking to delete corrupted ones and such
     print(Markdown(f"Model found at `{model_path}`"))
-  
+
     try:
         from llama_cpp import Llama
     except:
@@ -150,11 +150,11 @@ def get_hf_llm(repo_id, debug_mode, context_window):
         # Ask for confirmation to install the required pip package
         message = "Local LLM interface package not found. Install `llama-cpp-python`?"
         if confirm_action(message):
-            
+
             # We're going to build llama-cpp-python correctly for the system we're on
 
             import platform
-            
+
             def check_command(command):
                 try:
                     subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -163,12 +163,12 @@ def get_hf_llm(repo_id, debug_mode, context_window):
                     return False
                 except FileNotFoundError:
                     return False
-            
+
             def install_llama(backend):
                 env_vars = {
                     "FORCE_CMAKE": "1"
                 }
-                
+
                 if backend == "cuBLAS":
                     env_vars["CMAKE_ARGS"] = "-DLLAMA_CUBLAS=on"
                 elif backend == "hipBLAS":
@@ -177,12 +177,12 @@ def get_hf_llm(repo_id, debug_mode, context_window):
                     env_vars["CMAKE_ARGS"] = "-DLLAMA_METAL=on"
                 else:  # Default to OpenBLAS
                     env_vars["CMAKE_ARGS"] = "-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS"
-                
+
                 try:
                     subprocess.run([sys.executable, "-m", "pip", "install", "llama-cpp-python"], env=env_vars, check=True)
                 except subprocess.CalledProcessError as e:
                     print(f"Error during installation with {backend}: {e}")
-            
+
             def supports_metal():
                 # Check for macOS version
                 if platform.system() == "Darwin":
@@ -191,7 +191,7 @@ def get_hf_llm(repo_id, debug_mode, context_window):
                     if mac_version >= (10, 11):
                         return True
                 return False
-            
+
             # Check system capabilities
             if check_command(["nvidia-smi"]):
                 install_llama("cuBLAS")
@@ -201,7 +201,7 @@ def get_hf_llm(repo_id, debug_mode, context_window):
                 install_llama("Metal")
             else:
                 install_llama("OpenBLAS")
-          
+
             from llama_cpp import Llama
             print('', Markdown("Finished downloading `Code-Llama` interface."), '')
 
@@ -219,7 +219,7 @@ def get_hf_llm(repo_id, debug_mode, context_window):
                     print("2. Install it:")
                     print("bash Miniforge3-MacOSX-arm64.sh")
                     print("")
-      
+
         else:
             print('', "Installation cancelled. Exiting.", '')
             return None
@@ -227,7 +227,7 @@ def get_hf_llm(repo_id, debug_mode, context_window):
     # Initialize and return Code-Llama
     assert os.path.isfile(model_path)
     llama_2 = Llama(model_path=model_path, n_gpu_layers=n_gpu_layers, verbose=debug_mode, n_ctx=context_window)
-      
+
     return llama_2
 
 def confirm_action(message):
@@ -334,9 +334,6 @@ def format_quality_choice(model, name_override = None) -> str:
     """
     Formats the model choice for display in the inquirer prompt.
     """
-    if name_override:
-        name = name_override
-    else:
-        name = model['filename']
+    name = name_override if name_override else model['filename']
     return f"{name} | Size: {model['Size']:.1f} GB, Estimated RAM usage: {model['RAM']:.1f} GB"
 
