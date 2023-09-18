@@ -590,18 +590,18 @@ ansicon = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "litellm"
-version = "0.1.591"
+version = "0.1.690"
 description = "Library to easily interface with LLM API providers"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "litellm-0.1.591-py3-none-any.whl", hash = "sha256:f75176043f96c3b2448ae2829c26dd2e20b0d40a404c1f5191beefd0df728ac4"},
-    {file = "litellm-0.1.591.tar.gz", hash = "sha256:008ffdbf5ba4ae7936f14fa592b03bf20c064d97be5113ef445839c25f192015"},
+    {file = "litellm-0.1.690-py3-none-any.whl", hash = "sha256:b936b80bdeba02a4a278c94fdcf4eff22904e531af86b7e1a8c01518a5ac00a6"},
+    {file = "litellm-0.1.690.tar.gz", hash = "sha256:51271a11f4c963da23a9b7bb75dca9a8de4c5dee1b9906057e59ca9e51ac400a"},
 ]
 
 [package.dependencies]
 importlib-metadata = ">=6.8.0,<7.0.0"
-openai = ">=0.27.8,<0.28.0"
+openai = ">=0.27.0,<0.29.0"
 python-dotenv = ">=0.2.0"
 tiktoken = ">=0.4.0,<0.5.0"
 
